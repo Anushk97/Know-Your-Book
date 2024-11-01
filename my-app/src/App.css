@@ -306,6 +306,8 @@ body {
   cursor: pointer;
   font-size: 0.9em;
   transition: background-color 0.3s;
+  flex: 1 1 auto; /* Allow buttons to grow and shrink */
+  max-width: 90%; /* Ensure buttons don't exceed container width */
 }
 
 .follow-up-prompts button:hover {
@@ -406,5 +408,10 @@ body {
   .chat-input button {
     font-size: 1em; /* Adjust button font size */
     padding: 10px; /* Adjust button padding */
+  }
+
+  .follow-up-prompts button {
+    font-size: 0.8em; /* Adjust font size for smaller screens */
+    padding: 4px 8px; /* Adjust padding for smaller screens */
   }
 }
