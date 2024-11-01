@@ -44,6 +44,7 @@ app.post('/api/chat', async (req, res) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         },
+        timeout: 10000,
       }
     );
 
