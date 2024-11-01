@@ -40,7 +40,7 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
 
     try {
       setError(null); // Reset error state before fetching
-      const categoryResponse = await axios.post('http://localhost:5001/api/identify-category', { query });
+      const categoryResponse = await axios.post('https://know-your-book.vercel.app/api/identify-category', { query });
       const { category, year, author } = categoryResponse.data;
       setIdentifiedCategory(category);
 
@@ -113,7 +113,7 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
     setUserMessage('');
 
     try {
-      const response = await axios.post('http://localhost:5001/api/chat', {
+      const response = await axios.post('https://know-your-book.vercel.app/api/chat', {
         message: userMessage,
         book: selectedBook.title,
         conversation: chatMessages,
@@ -123,7 +123,7 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
       setChatMessages([...chatMessages, newMessage, botMessage]);
 
       // Fetch follow-up prompts
-      const promptsResponse = await axios.post('http://localhost:5001/api/generate-prompts', {
+      const promptsResponse = await axios.post('https://know-your-book.vercel.app/api/generate-prompts', {
         conversation: [...chatMessages, newMessage, botMessage],
       });
 
