@@ -101,7 +101,7 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
     } else {
       setSelectedBook(book); // Select the book
       setChatMessages([]); // Reset chat messages
-      setFollowUpPrompts([]); // Reset follow-up prompts
+      setFollowUpPrompts(["What is this book about?"]); // Set initial prompt
     }
   };
 
@@ -228,7 +228,7 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
         <div className="chat-input">
           <input
             type="text"
-            placeholder="What is this book about?"
+            placeholder="Input your message here..."
             value={userMessage}
             onChange={(e) => setUserMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
