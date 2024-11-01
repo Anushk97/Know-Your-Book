@@ -2,7 +2,8 @@
   "name": "book-reco-proj",
   "version": "1.0.0",
   "scripts": {
-    "heroku-postbuild": "npm install --prefix my-app && npm run build --prefix my-app"
+    "heroku-postbuild": "npm install --prefix my-app && npm run build --prefix my-app",
+    "build": "CI=false react-scripts build"
   },
   "engines": {
     "node": "14.x"

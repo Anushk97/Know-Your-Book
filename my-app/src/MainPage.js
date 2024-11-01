@@ -5,11 +5,11 @@ import { SiAdobe } from 'react-icons/si';
 import { useNavigate } from 'react-router-dom';
 
 const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverUrl, setProtagonistMessage, setChatHistory }) => {
-  const [book, setBookLocal] = useState('');
-  const [author, setAuthorLocal] = useState('');
-  const [bookAbstract, setBookAbstractLocal] = useState('');
-  const [bookStats, setBookStatsLocal] = useState({ pages: 1268, wordsPerPage: 250 });
-  const [coverUrl, setCoverUrlLocal] = useState('');
+  // const [book, setBookLocal] = useState('');
+  // const [author, setAuthorLocal] = useState('');
+  // const [bookAbstract, setBookAbstractLocal] = useState('');
+  // const [bookStats, setBookStatsLocal] = useState({ pages: 1268, wordsPerPage: 250 });
+  // const [coverUrl, setCoverUrlLocal] = useState('');
   const [latestBooks, setLatestBooks] = useState([]);
   const [identifiedCategory, setIdentifiedCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
