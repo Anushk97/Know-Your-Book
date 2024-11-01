@@ -200,6 +200,16 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
           </div>
         </div>
       </div>
+      {/* About the Creator Link */}
+      <a
+        href="https://www.linkedin.com/in/your-linkedin-profile" // Replace with your LinkedIn URL
+        target="_blank"
+        rel="noopener noreferrer"
+        className="creator-link"
+      >
+        About the Creator
+      </a>
+
       {/* Chatbot Button */}
       <button className="chatbot-button" onClick={toggleChatbot}>💬</button>
 

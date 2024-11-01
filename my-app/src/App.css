@@ -342,3 +342,19 @@ body {
   margin: 10px 0;
   text-align: center;
 }
+
+/* About the Creator Link */
+.creator-link {
+  position: fixed;
+  bottom: 20px;
+  right: 20px; /* Position on the lower right corner */
+  color: #555; /* Dark grey color */
+  text-decoration: none;
+  font-size: 1em;
+  z-index: 1000;
+  transition: color 0.3s;
+}
+
+.creator-link:hover {
+  color: #007acc; /* Change color on hover */
+}
