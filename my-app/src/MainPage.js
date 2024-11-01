@@ -239,4 +239,4 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
 
 export default MainPage;
 
-/////////?? 
+/////////????
