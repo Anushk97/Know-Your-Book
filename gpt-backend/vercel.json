@@ -1,0 +1,26 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "gpt-backend/server.js",
+        "use": "@vercel/node"
+      },
+      {
+        "src": "my-app/package.json",
+        "use": "@vercel/static-build",
+        "config": {
+          "distDir": "my-app/build"
+        }
+      }
+    ],
+    "routes": [
+      {
+        "src": "/api/(.*)",
+        "dest": "gpt-backend/server.js"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "my-app/$1"
+      }
+    ]
+  }
