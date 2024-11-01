@@ -36,6 +36,7 @@ body {
   display: flex;
   align-items: center;
   transition: box-shadow 0.3s ease-in-out;
+  box-sizing: border-box;
 }
 
 .search-bar:hover {
@@ -312,10 +313,14 @@ body {
 }
 
 .search-title {
-  font-size: 2em; /* Adjust font size as needed */
+  font-size: 2em; /* Base font size */
   color: #e0e0e0;
   margin-bottom: 10px;
   text-align: center;
+  width: 100%;
+  max-width: 1000px;
+  padding: 0 20px; /* Add padding for smaller screens */
+  box-sizing: border-box;
 }
 
 .filter-select {
@@ -357,4 +362,25 @@ body {
 
 .creator-link:hover {
   color: #007acc; /* Change color on hover */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .search-title {
+    font-size: 1.5em; /* Smaller font size for smaller screens */
+  }
+
+  .search-bar {
+    padding: 15px; /* Reduce padding for smaller screens */
+  }
+
+  .search-bar input {
+    font-size: 1.2em; /* Adjust input font size */
+    padding: 15px; /* Adjust input padding */
+  }
+
+  .search-bar button {
+    font-size: 1em; /* Adjust button font size */
+    padding: 8px 16px; /* Adjust button padding */
+  }
 }
