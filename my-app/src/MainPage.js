@@ -202,7 +202,7 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
       </div>
       {/* About the Creator Link */}
       <a
-        href="https://www.linkedin.com/in/your-linkedin-profile" // Replace with your LinkedIn URL
+        href="https://www.linkedin.com/in/anushkfarkiya/"
         target="_blank"
         rel="noopener noreferrer"
         className="creator-link"
