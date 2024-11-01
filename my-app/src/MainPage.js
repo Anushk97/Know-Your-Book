@@ -79,7 +79,7 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
       }, 10000);
     } catch (error) {
       if (error.response && error.response.status === 400) {
-        setError('Bad Request: Please check your query and try again.');
+        setError('Bad Request: Please check your query and try again with atleast 3 words.');
       } else {
         console.error('Error fetching category or books:', error.response ? error.response.data : error.message);
         setError('There was an error fetching the books. Please try a different query.');

@@ -34,7 +34,7 @@ app.post('/api/chat', async (req, res) => {
       {
         model: 'gpt-4',
         messages: [
-          { role: 'system', content: `You are the protagonist of the book "${book}". Continue the story chapter by chapter. Dive into a chapter in detail if the user wants to.Use emojis to make your responses more visual and interesting. Keep your responses concise and complete it within the token limit. Talk about one chapter at a time. Do not mention which chapter you are on. for example, do not say "Chapter 1: .... and end each message with ...` },
+          { role: 'system', content: `You are the protagonist of the book "${book}". Continue the story chapter by chapter. Dive into a chapter in detail if the user wants to.Use emojis to make your responses more visual and interesting. Keep your responses concise and complete it within the token limit. Talk about one chapter at a time. Do not mention which chapter you are on. for example, do not say "Chapter 1: .... and end each message with ... do not discuss anything else other than the ${book} contents even if the user asks you to. This is a strict rule to stick to the current ${book} contents.` },
           { role: 'user', content: `Conversation so far: ${JSON.stringify(conversation)}. User's prompt: ${message}` },
         ],
         max_tokens: 300,

@@ -237,7 +237,7 @@ body {
 }
 
 .load-more-button {
-  background-color: #007acc;
+  background-color: rgba(30, 30, 30, 0.9);
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -250,7 +250,7 @@ body {
 }
 
 .load-more-button:hover {
-  background-color: #005f99;
+  background-color: rgba(30, 30, 30, 0.7);
 }
 
 /* Animations */
@@ -268,7 +268,7 @@ body {
   position: fixed;
   bottom: 20px;
   left: 20px;
-  background-color: #007acc;
+  background-color: rgba(30, 30, 30, 0.9);
   color: #fff;
   border: none;
   padding: 30px; /* Increased padding for a larger button */
@@ -281,7 +281,7 @@ body {
 }
 
 .chatbot-button:hover {
-  background-color: #005f99;
+  background-color: rgba(30, 30, 30, 0.7);
 }
 
 .follow-up-prompts {
