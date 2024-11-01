@@ -85,8 +85,8 @@ body {
 /* Book Grid */
 .book-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* Responsive columns */
-  gap: 20px; /* Gap between book covers */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive columns */
+  gap: 50px; /* Gap between book covers */
   width: 100%;
   padding: 20px; /* Optional padding for better spacing */
   box-sizing: border-box; /* Include padding in width calculation */
