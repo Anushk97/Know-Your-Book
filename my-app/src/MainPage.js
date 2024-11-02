@@ -110,29 +110,56 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
 
     const newMessage = { role: 'user', content: userMessage };
     const updatedChatMessages = [...chatMessages, newMessage];
+    
+    // Update chat state and clear the input field
     setChatMessages(updatedChatMessages);
     setUserMessage('');
 
     try {
-      // Sending message to chat completion endpoint
-      const response = await axios.post('https://know-your-book.vercel.app/api/chat', {
-        message: userMessage,
-        book: selectedBook.title,
-        conversation: updatedChatMessages,
-      });
+      // Send message to OpenAI Chat API
+      const botMessage = await fetchChatCompletion(userMessage, selectedBook.title, updatedChatMessages);
 
-      const botMessage = { role: 'bot', content: response.data.response };
+      // Update chat state with bot's response
       const newChatMessages = [...updatedChatMessages, botMessage];
       setChatMessages(newChatMessages);
 
-      // Fetch follow-up prompts
-      const promptsResponse = await axios.post('https://know-your-book.vercel.app/api/generate-prompts', {
-        conversation: newChatMessages,
-      });
+      // Fetch follow-up prompts based on updated conversation
+      const followUpPrompts = await fetchFollowUpPrompts(newChatMessages);
+      setFollowUpPrompts(followUpPrompts);
 
-      setFollowUpPrompts(promptsResponse.data.prompts);
     } catch (error) {
-      console.error('Error sending message:', error.response ? error.response.data : error.message);
+      console.error('Error handling send message:', error.response ? error.response.data : error.message);
+    }
+};
+
+// Helper function to call chat completion API
+const fetchChatCompletion = async (message, book, conversation) => {
+    try {
+        const response = await axios.post('https://know-your-book.vercel.app/api/chat', {
+            message,
+            book,
+            conversation,
+        });
+
+        const botMessage = { role: 'bot', content: response.data.response };
+        return botMessage;
+    } catch (error) {
+        console.error('Error communicating with OpenAI Chat API:', error.response ? error.response.data : error.message);
+        throw new Error('Failed to fetch chat completion');
+    }
+};
+
+// Helper function to fetch follow-up prompts
+const fetchFollowUpPrompts = async (conversation) => {
+    try {
+        const response = await axios.post('https://know-your-book.vercel.app/api/generate-prompts', {
+            conversation,
+        });
+
+        return response.data.prompts;
+    } catch (error) {
+        console.error('Error fetching follow-up prompts:', error.response ? error.response.data : error.message);
+        throw new Error('Failed to fetch follow-up prompts');
     }
 };
 
