@@ -135,96 +135,115 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
 
 // Helper function to call chat completion API
 const fetchChatCompletion = async (message, book, conversation) => {
-    try {
-        const response = await axios.post('https://know-your-book.vercel.app/api/chat', {
-            message,
-            book,
-            conversation,
-        }, {
-            timeout: 20000, // Increased timeout to 20 seconds
-        });
+  try {
+      const response = await axios.post('https://know-your-book.vercel.app/api/chat', {
+          message,
+          book,
+          conversation,
+      }, {
+          timeout: 20000, // Increased timeout to 20 seconds
+      });
 
-        const botMessage = { role: 'bot', content: response.data.response };
-        return botMessage;
-    } catch (error) {
-        console.error('Error communicating with OpenAI Chat API:', error.response ? error.response.data : error.message);
-        
-        // Retry mechanism for network issues or temporary server problems
-        if (error.code === 'ECONNABORTED' || error.response?.status >= 500) {
-            console.warn('Retrying chat completion request...');
-            return retryFetchChatCompletion(message, book, conversation);
-        }
+      const botMessage = { role: 'bot', content: response.data.response };
+      return botMessage;
+  } catch (error) {
+      console.error('Error communicating with OpenAI Chat API:', error.response ? error.response.data : error.message);
 
-        throw new Error('Failed to fetch chat completion');
-    }
+      // Retry with conversation trimming or summarization for server errors or token issues
+      if (error.code === 'ECONNABORTED' || error.response?.status >= 500) {
+          console.warn('Retrying with trimmed or summarized conversation...');
+          return retryFetchChatCompletion(message, book, conversation);
+      }
+
+      throw new Error('Failed to fetch chat completion');
+  }
 };
 
-// Retry function for chat completion API
+// Retry function with conversation management
 const retryFetchChatCompletion = async (message, book, conversation, retries = 2) => {
-    for (let attempt = 0; attempt < retries; attempt++) {
-        try {
-            const response = await axios.post('https://know-your-book.vercel.app/api/chat', {
-                message,
-                book,
-                conversation,
-            }, {
-                timeout: 20000,
-            });
+  for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+          const adjustedConversation = adjustConversationLength(conversation);
 
-            const botMessage = { role: 'bot', content: response.data.response };
-            return botMessage;
-        } catch (error) {
-            if (attempt === retries - 1) {
-                console.error('Failed after retries:', error.response ? error.response.data : error.message);
-                throw error; // Throw if all retries fail
-            }
-            console.warn(`Retry attempt ${attempt + 1} failed. Retrying...`);
-        }
-    }
+          const response = await axios.post('https://know-your-book.vercel.app/api/chat', {
+              message,
+              book,
+              conversation: adjustedConversation,
+          }, {
+              timeout: 20000,
+          });
+
+          const botMessage = { role: 'bot', content: response.data.response };
+          return botMessage;
+      } catch (error) {
+          if (attempt === retries - 1) {
+              console.error('Failed after retries:', error.response ? error.response.data : error.message);
+              throw error; // Throw if all retries fail
+          }
+          console.warn(`Retry attempt ${attempt + 1} failed. Retrying...`);
+      }
+  }
+};
+
+// Helper function to adjust conversation length
+const adjustConversationLength = (conversation) => {
+  // Maximum number of messages to keep
+  const MAX_MESSAGES = 10;
+
+  if (conversation.length > MAX_MESSAGES) {
+      // Trim the oldest messages to keep only the most recent ones
+      return conversation.slice(-MAX_MESSAGES);
+  }
+
+  // Optional: If more advanced, you could replace with a summarized conversation here
+  // For instance, call a summarization API and use that as the context
+  return conversation;
 };
 
 // Helper function to fetch follow-up prompts
 const fetchFollowUpPrompts = async (conversation) => {
-    try {
-        const response = await axios.post('https://know-your-book.vercel.app/api/generate-prompts', {
-            conversation,
-        }, {
-            timeout: 10000,
-        });
+  try {
+      const response = await axios.post('https://know-your-book.vercel.app/api/generate-prompts', {
+          conversation,
+      }, {
+          timeout: 10000,
+      });
 
-        return response.data.prompts;
-    } catch (error) {
-        console.error('Error fetching follow-up prompts:', error.response ? error.response.data : error.message);
-        
-        // Retry mechanism for prompt generation
-        if (error.code === 'ECONNABORTED' || error.response?.status >= 500) {
-            console.warn('Retrying follow-up prompts request...');
-            return retryFetchFollowUpPrompts(conversation);
-        }
+      return response.data.prompts;
+  } catch (error) {
+      console.error('Error fetching follow-up prompts:', error.response ? error.response.data : error.message);
 
-        throw new Error('Failed to fetch follow-up prompts');
-    }
+      // Retry with conversation trimming for server errors or token issues
+      if (error.code === 'ECONNABORTED' || error.response?.status >= 500) {
+          console.warn('Retrying follow-up prompts request with trimmed conversation...');
+          return retryFetchFollowUpPrompts(conversation);
+      }
+
+      throw new Error('Failed to fetch follow-up prompts');
+  }
 };
 
-// Retry function for follow-up prompts
+// Retry function with conversation management for follow-up prompts
 const retryFetchFollowUpPrompts = async (conversation, retries = 2) => {
-    for (let attempt = 0; attempt < retries; attempt++) {
-        try {
-            const response = await axios.post('https://know-your-book.vercel.app/api/generate-prompts', {
-                conversation,
-            }, {
-                timeout: 10000,
-            });
+  for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+          const adjustedConversation = adjustConversationLength(conversation);
 
-            return response.data.prompts;
-        } catch (error) {
-            if (attempt === retries - 1) {
-                console.error('Failed after retries:', error.response ? error.response.data : error.message);
-                throw error;
-            }
-            console.warn(`Retry attempt ${attempt + 1} for follow-up prompts failed. Retrying...`);
-        }
-    }
+          const response = await axios.post('https://know-your-book.vercel.app/api/generate-prompts', {
+              conversation: adjustedConversation,
+          }, {
+              timeout: 10000,
+          });
+
+          return response.data.prompts;
+      } catch (error) {
+          if (attempt === retries - 1) {
+              console.error('Failed after retries for follow-up prompts:', error.response ? error.response.data : error.message);
+              throw error; // Throw if all retries fail
+          }
+          console.warn(`Retry attempt ${attempt + 1} for follow-up prompts failed. Retrying...`);
+      }
+  }
 };
 
   const toggleChatbot = () => {
