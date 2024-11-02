@@ -109,29 +109,32 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
     if (!userMessage.trim()) return;
 
     const newMessage = { role: 'user', content: userMessage };
-    setChatMessages([...chatMessages, newMessage]);
+    const updatedChatMessages = [...chatMessages, newMessage];
+    setChatMessages(updatedChatMessages);
     setUserMessage('');
 
     try {
+      // Sending message to chat completion endpoint
       const response = await axios.post('https://know-your-book.vercel.app/api/chat', {
         message: userMessage,
         book: selectedBook.title,
-        conversation: chatMessages,
+        conversation: updatedChatMessages,
       });
 
       const botMessage = { role: 'bot', content: response.data.response };
-      setChatMessages([...chatMessages, newMessage, botMessage]);
+      const newChatMessages = [...updatedChatMessages, botMessage];
+      setChatMessages(newChatMessages);
 
       // Fetch follow-up prompts
       const promptsResponse = await axios.post('https://know-your-book.vercel.app/api/generate-prompts', {
-        conversation: [...chatMessages, newMessage, botMessage],
+        conversation: newChatMessages,
       });
 
       setFollowUpPrompts(promptsResponse.data.prompts);
     } catch (error) {
-      console.error('Error sending message:', error.message);
+      console.error('Error sending message:', error.response ? error.response.data : error.message);
     }
-  };
+};
 
   const toggleChatbot = () => {
     setShowChatbot(!showChatbot);

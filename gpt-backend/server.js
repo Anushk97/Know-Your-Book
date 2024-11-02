@@ -22,11 +22,12 @@ const cache = {};
 app.post('/api/chat', async (req, res) => {
   const { message, book, conversation } = req.body;
 
+  if (!message || !book || !Array.isArray(conversation)) {
+    return res.status(400).json({ error: 'Invalid input data' });
+  }
+
   try {
-    const prompt = `You are the protagonist of the book "${book}". 
-    Continue the story from where it left off, focusing on the next chapter. 
-    Provide insights into your thoughts, feelings, and actions as the story unfolds. 
-    User's prompt: ${message}`;
+    const prompt = `You are the protagonist of the book "${book}". Continue the story from where it left off, focusing on the next chapter. Provide insights into your thoughts, feelings, and actions as the story unfolds. User's prompt: ${message}`;
     console.log('Prompt sent to OpenAI:', prompt);
 
     const response = await axios.post(
@@ -34,10 +35,10 @@ app.post('/api/chat', async (req, res) => {
       {
         model: 'gpt-4',
         messages: [
-          { role: 'system', content: `You are the protagonist of the book "${book}". Continue the story chapter by chapter. Dive into a chapter in detail if the user wants to.Use emojis to make your responses more visual and interesting. Keep your responses concise and complete it within the token limit. Talk about one chapter at a time. Do not mention which chapter you are on. for example, do not say "Chapter 1: .... and end each message with ... do not discuss anything else other than the ${book} contents even if the user asks you to. This is a strict rule to stick to the current ${book} contents.` },
+          { role: 'system', content: `You are the protagonist of the book "${book}". Continue the story chapter by chapter. Dive into a chapter in detail if the user wants to. Use emojis to make your responses more visual and interesting. Keep your responses concise and within the token limit. Do not mention which chapter you are on. Stick strictly to the current ${book} contents.` },
           { role: 'user', content: `Conversation so far: ${JSON.stringify(conversation)}. User's prompt: ${message}` },
         ],
-        max_tokens: 300,
+        max_tokens: 2000,
       },
       {
         headers: {
@@ -47,8 +48,6 @@ app.post('/api/chat', async (req, res) => {
         timeout: 10000,
       }
     );
-
-    console.log('OpenAI API response:', response.data);
 
     const gptResponse = response.data.choices[0].message.content.trim();
     console.log('GPT Response:', gptResponse);
@@ -113,6 +112,10 @@ app.post('/api/protagonist-message', async (req, res) => {
 app.post('/api/generate-prompts', async (req, res) => {
   const { conversation } = req.body;
 
+  if (!Array.isArray(conversation)) {
+    return res.status(400).json({ error: 'Invalid input data' });
+  }
+
   try {
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
@@ -132,14 +135,12 @@ app.post('/api/generate-prompts', async (req, res) => {
       }
     );
 
-    // Process the response to remove any numbering and add "Continue your story"
     const gptPrompts = response.data.choices[0].message.content
       .trim()
       .split('\n')
-      .map(prompt => prompt.replace(/^\d+\.\s*|-/, '').trim()) // Remove leading numbers, spaces, and dashes
-      .slice(0, 2); // Get only two prompts
+      .map(prompt => prompt.replace(/^\d+\.\s*|-/, '').trim())
+      .slice(0, 2);
 
-    // Add "Continue your story" to the list of prompts
     gptPrompts.push("Continue your story");
 
     res.json({ prompts: gptPrompts });
