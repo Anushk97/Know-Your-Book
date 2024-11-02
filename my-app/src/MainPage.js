@@ -41,8 +41,9 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
     try {
       setError(null); // Reset error state before fetching
   
-      // Fetch category from Penguin Random House API
-      const prhResponse = await axios.get(`https://api.penguinrandomhouse.com/resources/search?q=${encodeURIComponent(query)}`);
+      // Use a CORS proxy
+      const corsProxy = 'https://cors-anywhere.herokuapp.com/';
+      const prhResponse = await axios.get(`${corsProxy}https://api.penguinrandomhouse.com/resources/search?q=${encodeURIComponent(query)}`);
       const prhBooks = prhResponse.data.results.map(item => ({
         title: item.name,
         author: item.author ? item.author.join(', ') : 'Unknown',
