@@ -37,49 +37,43 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
       setError('Please enter a valid search query.');
       return;
     }
-
+  
     try {
       setError(null); // Reset error state before fetching
-      const categoryResponse = await axios.post('https://know-your-book.vercel.app/api/identify-category', { query });
-      const { category, year, author } = categoryResponse.data;
-      setIdentifiedCategory(category);
-
-      let queryString = `${encodeURIComponent(query)}`;
-      if (category) {
-        queryString += `+subject:${encodeURIComponent(category)}`;
-      }
-      if (year) {
-        queryString += `+after:${year}`;
-      }
-      if (author) {
-        queryString += `+inauthor:${encodeURIComponent(author)}`;
-      }
-
-      const requestUrl = `https://www.googleapis.com/books/v1/volumes?q=${queryString}&orderBy=${filter}&printType=books&langRestrict=en&startIndex=${startIndex}&maxResults=20&key=${process.env.REACT_APP_GOOGLE_BOOKS_API_KEY}`;
-      console.log('Request URL:', requestUrl); // Log the request URL
-
+  
+      // Fetch category from Penguin Random House API
+      const prhResponse = await axios.get(`https://api.penguinrandomhouse.com/resources/search?q=${encodeURIComponent(query)}`);
+      const prhBooks = prhResponse.data.results.map(item => ({
+        title: item.name,
+        author: item.author ? item.author.join(', ') : 'Unknown',
+        abstract: item.description ? item.description.join(' ') : 'No description available.',
+        coverUrl: item.imageUrl || '',
+      }));
+  
+      // Fetch books from Google Books API
+      const requestUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&orderBy=${filter}&printType=books&langRestrict=en&startIndex=${startIndex}&maxResults=20&key=${process.env.REACT_APP_GOOGLE_BOOKS_API_KEY}`;
       const booksResponse = await axios.get(requestUrl);
-      
-      const items = booksResponse.data.items || [];
-      const books = items.map(item => ({
+      const googleBooks = booksResponse.data.items.map(item => ({
         title: item.volumeInfo.title,
         author: item.volumeInfo.authors ? item.volumeInfo.authors.join(', ') : 'Unknown',
         pages: item.volumeInfo.pageCount || 'N/A',
         abstract: item.volumeInfo.description || 'No description available.',
         coverUrl: item.volumeInfo.imageLinks?.thumbnail || '',
       }));
-      
-      setLatestBooks(prevBooks => startIndex === 0 ? books : [...prevBooks, ...books]);
-
+  
+      // Combine results from both APIs
+      const combinedBooks = [...prhBooks, ...googleBooks];
+      setLatestBooks(prevBooks => startIndex === 0 ? combinedBooks : [...prevBooks, ...combinedBooks]);
+  
       // Set a timeout to check for results after 10 seconds
       setTimeout(() => {
-        if (startIndex === 0 && books.length === 0) {
+        if (startIndex === 0 && combinedBooks.length === 0) {
           setError('No results found. Please try a different query.');
         }
       }, 10000);
     } catch (error) {
       if (error.response && error.response.status === 400) {
-        setError('Bad Request: Please check your query and try again with atleast 3 words.');
+        setError('Bad Request: Please check your query and try again with at least 3 words.');
       } else {
         console.error('Error fetching category or books:', error.response ? error.response.data : error.message);
         setError('There was an error fetching the books. Please try a different query.');

@@ -184,8 +184,8 @@ app.post('/api/identify-category', async (req, res) => {
 
   // Validate input length
   const wordCount = query.split(/\s+/).filter(word => word.length > 0).length;
-  if (wordCount < 3) {
-    return res.status(400).json({ error: 'Input text is too short. Please provide at least 3 words.' });
+  if (wordCount < 1) {
+    return res.status(400).json({ error: 'Input text is too short. Please provide at least 1 word.' });
   }
 
   try {
