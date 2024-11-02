@@ -134,6 +134,7 @@ const MainPage = ({ setBook, setAuthor, setBookAbstract, setBookStats, setCoverU
 };
 
 // Helper function to call chat completion API
+// Adjusted `fetchChatCompletion` to use dynamic token-based truncation
 const fetchChatCompletion = async (message, book, conversation) => {
   try {
       const response = await axios.post('https://know-your-book.vercel.app/api/chat', {
@@ -149,10 +150,10 @@ const fetchChatCompletion = async (message, book, conversation) => {
   } catch (error) {
       console.error('Error communicating with OpenAI Chat API:', error.response ? error.response.data : error.message);
 
-      // Retry with conversation trimming or summarization for server errors or token issues
+      // Retry with conversation trimming for token limits or server errors
       if (error.code === 'ECONNABORTED' || error.response?.status >= 500) {
-          console.warn('Retrying with trimmed or summarized conversation...');
-          return retryFetchChatCompletion(message, book, conversation);
+          console.warn('Retrying with token-limited conversation...');
+          return retryFetchChatCompletion(message, book, conversation, 8192); // Assuming GPT-4 8k context limit
       }
 
       throw new Error('Failed to fetch chat completion');
@@ -160,10 +161,10 @@ const fetchChatCompletion = async (message, book, conversation) => {
 };
 
 // Retry function with conversation management
-const retryFetchChatCompletion = async (message, book, conversation, retries = 2) => {
+const retryFetchChatCompletion = async (message, book, conversation, tokenLimit, retries = 2) => {
   for (let attempt = 0; attempt < retries; attempt++) {
       try {
-          const adjustedConversation = adjustConversationLength(conversation);
+          const adjustedConversation = adjustConversationLength(conversation, tokenLimit);
 
           const response = await axios.post('https://know-your-book.vercel.app/api/chat', {
               message,
@@ -185,22 +186,7 @@ const retryFetchChatCompletion = async (message, book, conversation, retries = 2
   }
 };
 
-// Helper function to adjust conversation length
-const adjustConversationLength = (conversation) => {
-  // Maximum number of messages to keep
-  const MAX_MESSAGES = 10;
-
-  if (conversation.length > MAX_MESSAGES) {
-      // Trim the oldest messages to keep only the most recent ones
-      return conversation.slice(-MAX_MESSAGES);
-  }
-
-  // Optional: If more advanced, you could replace with a summarized conversation here
-  // For instance, call a summarization API and use that as the context
-  return conversation;
-};
-
-// Helper function to fetch follow-up prompts
+// Adjusted `fetchFollowUpPrompts` with token-limited truncation
 const fetchFollowUpPrompts = async (conversation) => {
   try {
       const response = await axios.post('https://know-your-book.vercel.app/api/generate-prompts', {
@@ -215,8 +201,8 @@ const fetchFollowUpPrompts = async (conversation) => {
 
       // Retry with conversation trimming for server errors or token issues
       if (error.code === 'ECONNABORTED' || error.response?.status >= 500) {
-          console.warn('Retrying follow-up prompts request with trimmed conversation...');
-          return retryFetchFollowUpPrompts(conversation);
+          console.warn('Retrying follow-up prompts request with token-limited conversation...');
+          return retryFetchFollowUpPrompts(conversation, 8192); // Assuming GPT-4 8k context limit
       }
 
       throw new Error('Failed to fetch follow-up prompts');
@@ -224,10 +210,10 @@ const fetchFollowUpPrompts = async (conversation) => {
 };
 
 // Retry function with conversation management for follow-up prompts
-const retryFetchFollowUpPrompts = async (conversation, retries = 2) => {
+const retryFetchFollowUpPrompts = async (conversation, tokenLimit, retries = 2) => {
   for (let attempt = 0; attempt < retries; attempt++) {
       try {
-          const adjustedConversation = adjustConversationLength(conversation);
+          const adjustedConversation = adjustConversationLength(conversation, tokenLimit);
 
           const response = await axios.post('https://know-your-book.vercel.app/api/generate-prompts', {
               conversation: adjustedConversation,
@@ -239,11 +225,38 @@ const retryFetchFollowUpPrompts = async (conversation, retries = 2) => {
       } catch (error) {
           if (attempt === retries - 1) {
               console.error('Failed after retries for follow-up prompts:', error.response ? error.response.data : error.message);
-              throw error; // Throw if all retries fail
+              throw error;
           }
           console.warn(`Retry attempt ${attempt + 1} for follow-up prompts failed. Retrying...`);
       }
   }
+};
+
+// Helper function to adjust conversation length
+// Approximate function to estimate token count based on word count
+const estimateTokenCount = (text) => {
+  return Math.ceil(text.split(/\s+/).length * 1.33); // Estimate: 1 word ≈ 1.33 tokens
+};
+
+// Helper function to adjust conversation length based on token limit
+const adjustConversationLength = (conversation, modelTokenLimit = 8192) => {
+  let totalTokens = 0;
+  const trimmedConversation = [];
+
+  // Start from the end of the conversation and add messages until the limit is reached
+  for (let i = conversation.length - 1; i >= 0; i--) {
+      const message = conversation[i];
+      const messageTokenCount = estimateTokenCount(message.content);
+
+      // Check if adding this message would exceed the token limit
+      if (totalTokens + messageTokenCount > modelTokenLimit) break;
+
+      // Prepend message to maintain original order
+      trimmedConversation.unshift(message);
+      totalTokens += messageTokenCount;
+  }
+
+  return trimmedConversation;
 };
 
   const toggleChatbot = () => {
